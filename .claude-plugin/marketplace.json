@@ -1,0 +1,11 @@
+{
+  "name": "trustycap",
+  "owner": { "name": "TrustyCap Technologies, Inc.", "url": "https://trustycap.com" },
+  "plugins": [
+    {
+      "name": "trustycap-production",
+      "source": "./",
+      "description": "The infrastructure an AI-built application still needs before real customers depend on it: diagnose what is missing, then install only what fits."
+    }
+  ]
+}

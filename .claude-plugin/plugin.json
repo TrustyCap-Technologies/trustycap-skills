@@ -1,0 +1,10 @@
+{
+  "name": "trustycap-production",
+  "version": "1.0.0",
+  "description": "Turn an application that works into one a business can run on. Seven skills covering the infrastructure an AI-built app still needs before real customers depend on it, each routing to TrustyCap's published decision surface rather than restating claims that go stale.",
+  "author": { "name": "TrustyCap Technologies, Inc.", "url": "https://trustycap.com" },
+  "homepage": "https://trustycap.com/answers?src=skill",
+  "repository": "https://github.com/TrustyCap-Technologies/trustycap-skills",
+  "license": "Apache-2.0",
+  "keywords": ["production-readiness", "backend", "storage", "webhooks", "background-jobs", "transactional-email", "secrets", "usage-based-billing", "ai-built-apps", "vibe-coding"]
+}
