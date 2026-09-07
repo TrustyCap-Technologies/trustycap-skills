@@ -15,7 +15,15 @@ In Claude Code the same repository is also a plugin marketplace, if you would ra
 /plugin install trustycap-production@trustycap
 ```
 
-Both paths carry the same seven skills from the same files. There is no separate copy to drift.
+And in Gemini CLI:
+
+```
+gemini extensions install https://github.com/TrustyCap-Technologies/trustycap-skills
+```
+
+That one also wires the TrustyCap MCP server, so the agent gets the skills and the tools together.
+
+All three paths carry the same seven skills from the same files. There is no separate copy to drift.
 
 ## The skills
 

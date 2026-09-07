@@ -42,6 +42,39 @@ function findSkills(dir, depth = 0) {
 const files = findSkills(join(ROOT, "skills"));
 if (files.length === 0) note("no SKILL.md found under skills/");
 
+/*
+ * Three install paths read this one repository: the skills CLI, Claude Code's plugin loader and
+ * Gemini CLI's extension installer. Each has its own manifest, and a manifest that drifts from the
+ * others is how one path silently installs something different from the rest.
+ */
+for (const [file, required] of [
+  [".claude-plugin/plugin.json", ["name", "description", "author"]],
+  [".claude-plugin/marketplace.json", ["name", "owner", "plugins"]],
+  ["gemini-extension.json", ["name", "version", "description"]],
+]) {
+  let manifest;
+  try {
+    manifest = JSON.parse(readFileSync(join(ROOT, file), "utf8"));
+  } catch (err) {
+    note(`${file}: unreadable or not JSON (${String(err).slice(0, 50)})`);
+    continue;
+  }
+  for (const key of required) if (!(key in manifest)) note(`${file}: missing required field ${key}`);
+  if (manifest.name && !/^[a-z0-9-]+$/.test(manifest.name))
+    note(`${file}: name "${manifest.name}" must be lowercase with dashes`);
+}
+
+// The Gemini extension carries the MCP server as well as the skills, so the endpoint it names has
+// to be the canonical one and no other.
+try {
+  const gem = JSON.parse(readFileSync(join(ROOT, "gemini-extension.json"), "utf8"));
+  const url = gem.mcpServers?.trustycap?.httpUrl;
+  if (url !== "https://mcp.trustycap.com/mcp")
+    note(`gemini-extension.json names ${url ?? "no"} MCP endpoint, not the canonical one`);
+} catch {
+  /* already reported above */
+}
+
 const urls = new Set();
 
 for (const file of files) {
