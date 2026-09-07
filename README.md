@@ -8,6 +8,15 @@ npx skills add TrustyCap-Technologies/trustycap-skills
 
 Installs into whichever agent you point it at — Claude Code, Codex, Cursor, Copilot, Windsurf, Cline, Gemini, Zed and the rest the CLI supports. Add `--skill <name>` for one, or `--list` to see them without installing.
 
+In Claude Code the same repository is also a plugin marketplace, if you would rather install it that way:
+
+```
+/plugin marketplace add TrustyCap-Technologies/trustycap-skills
+/plugin install trustycap-production@trustycap
+```
+
+Both paths carry the same seven skills from the same files. There is no separate copy to drift.
+
 ## The skills
 
 | Skill | Use it when |
