@@ -44,7 +44,7 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 
 ## Prove it worked
 
-Where the scan named a requirement with an automatic remediation, two commands do the work and the proof: `npx trustycap add <remediation>` writes transparent TypeScript into the repository (`--dry-run` first; it refuses files with uncommitted changes) and `npx trustycap verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
+For credentials the scan finds in the code (`TC-PROD-0012`), `npx trustycap add managed-secrets` installs the custody side, a dependency-free adapter that reads a named credential from TrustyCap Managed Secrets at runtime, and names the exact lines a person still has to change; it does not rewrite them. `npx trustycap verify TC-PROD-0012` passes only once nothing credential-shaped remains in source or in a committed environment file. Where the scan named a requirement with an automatic remediation, two commands do the work and the proof: `npx trustycap add <remediation>` writes transparent TypeScript into the repository (`--dry-run` first; it refuses files with uncommitted changes) and `npx trustycap verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
 
 Do not report success from a 200 on the install call. Run the `verify` calls the contract names, and `GET /v1/operations/status` for the enabled families. Report what the verification returned, with ids. **Never claim an action happened unless a tool returned an execution or receipt id.**
 
