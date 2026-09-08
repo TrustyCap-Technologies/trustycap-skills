@@ -7,6 +7,14 @@ Audit first, install never. This skill answers one question: **what does this ap
 
 ## 1. Diagnose from the codebase, not from assumptions
 
+Start with evidence from the code itself. In the repository:
+
+```bash
+npx trustycap productionize --dry-run --json
+```
+
+The scanner reads the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`): file and line, AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the commands that would remediate and verify. `--dry-run` writes nothing. This skill audits and installs nothing; hand the findings to the human with the commands each one names.
+
 Work out what the application already does for itself. For each area, look for the evidence before deciding it is missing:
 
 | Area | Present if you find | Missing if |

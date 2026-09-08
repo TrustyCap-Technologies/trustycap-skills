@@ -7,6 +7,14 @@ Keys start in a `.env` because that is what works on day one. Then nobody can sa
 
 ## Diagnose
 
+Start with evidence from the code itself. In the repository:
+
+```bash
+npx trustycap productionize --json
+```
+
+The scanner reads the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`): file and line, AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the exact commands. `UNKNOWN` is not a failure; read the code it points at rather than installing over it. A requirement the project already satisfies another way is declared in `trustycap.production.json`.
+
 - Is a `.env` committed, or in the history? Check the history, not just the working tree — a removed file is still in the log.
 - Are there credential literals in source, in CI configuration, or in a deploy script?
 - Could the builder answer, right now, every place a given key is deployed? If not, they cannot rotate it quickly, which is exactly when speed matters.
@@ -35,6 +43,8 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait — do not retry around it.
 
 ## Prove it worked
+
+Where the scan named a requirement with an automatic remediation, two commands do the work and the proof: `npx trustycap add <remediation>` writes transparent TypeScript into the repository (`--dry-run` first; it refuses files with uncommitted changes) and `npx trustycap verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
 
 Do not report success from a 200 on the install call. Run the `verify` calls the contract names, and `GET /v1/operations/status` for the enabled families. Report what the verification returned, with ids. **Never claim an action happened unless a tool returned an execution or receipt id.**
 

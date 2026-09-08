@@ -7,6 +7,14 @@ Two failures with the same root: state that lives in the process or next to it.
 
 ## Diagnose
 
+Start with evidence from the code itself. In the repository:
+
+```bash
+npx trustycap productionize --json
+```
+
+The scanner reads the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`): file and line, AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the exact commands. `UNKNOWN` is not a failure; read the code it points at rather than installing over it. A requirement the project already satisfies another way is declared in `trustycap.production.json`.
+
 - **Storage.** Are uploads written to a local path? Does any credential reach the browser? A key that reaches the browser has left the building; the only safe shape is a short-lived signed link minted server-side for exactly one object.
 - **Data.** Are records in memory, a module-level array, or a file beside the code? They are gone on the first restart and disagree on the second instance. Does any query forget its tenant? That is not a bug testing finds; it is a bug two customers find at once.
 
@@ -32,6 +40,8 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait — do not retry around it.
 
 ## Prove it worked
+
+Where the scan named a requirement with an automatic remediation, two commands do the work and the proof: `npx trustycap add <remediation>` writes transparent TypeScript into the repository (`--dry-run` first; it refuses files with uncommitted changes) and `npx trustycap verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
 
 Do not report success from a 200 on the install call. Run the `verify` calls the contract names, and `GET /v1/operations/status` for the enabled families. Report what the verification returned, with ids. **Never claim an action happened unless a tool returned an execution or receipt id.**
 
