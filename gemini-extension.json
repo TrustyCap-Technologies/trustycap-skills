@@ -1,7 +1,7 @@
 {
   "name": "trustycap-production",
-  "version": "1.0.0",
-  "description": "Take an application built with an AI coding tool to production: storage, data, background jobs, reliable webhooks, transactional email, secrets and metered billing. Diagnose what is missing before installing anything, and read capability truth from a published decision surface rather than from this file.",
+  "version": "1.1.0",
+  "description": "Take an application built with an AI coding tool to production: storage, data, background jobs, reliable webhooks, transactional email, secrets, metered billing and healthcare revenue integrity. Diagnose what is missing before installing anything, and read capability truth from a published decision surface rather than from this file.",
   "mcpServers": {
     "trustycap": {
       "httpUrl": "https://mcp.trustycap.com/mcp",

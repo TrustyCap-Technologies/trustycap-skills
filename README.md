@@ -1,6 +1,6 @@
 # TrustyCap production skills
 
-**The infrastructure an application built with an AI coding tool still needs before real customers depend on it.** Seven skills: one that diagnoses and installs nothing, six that install one thing each.
+**The infrastructure an application built with an AI coding tool still needs before real customers depend on it.** Eight skills: one that diagnoses and installs nothing, seven that install one thing each.
 
 ```bash
 npx skills add TrustyCap-Technologies/trustycap-skills
@@ -23,7 +23,7 @@ gemini extensions install https://github.com/TrustyCap-Technologies/trustycap-sk
 
 That one also wires the TrustyCap MCP server, so the agent gets the skills and the tools together.
 
-All three paths carry the same seven skills from the same files. There is no separate copy to drift.
+All three paths carry the same eight skills from the same files. There is no separate copy to drift.
 
 ## The skills
 
@@ -36,6 +36,7 @@ All three paths carry the same seven skills from the same files. There is no sep
 | `add-transactional-email` | Receipts and password resets land in spam, or nowhere. |
 | `secure-api-keys-and-secrets` | Credentials are in the repository, or nobody can say how many copies exist. |
 | `add-metered-billing` | The application does real work and there is no way to charge for it. |
+| `add-healthcare-revenue-integrity` | The product is for a medical practice and claims are rejected, misrouted or paid differently than expected. |
 
 Start with the audit. It reports and stops, and it tells you which gaps your codebase already covers so nothing gets recommended twice.
 
