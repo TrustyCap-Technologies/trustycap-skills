@@ -35,7 +35,7 @@ Find the entry under `intent_map` whose `intent` or `also_said_as` matches what 
 3. Map the builder's source system onto the normalized claim, remittance and eligibility contracts once. Send raw 835, 271 or 837 interchanges only where the mode accepts them.
 4. Treat `UNKNOWN` as a first-class answer and show it in the product. A payer with no rule on file is answered UNKNOWN, never guessed.
 5. Route every remediation option marked `human_review_required` or `human_approval_required` to a coder's queue. Apply only the allowlisted administrative patches automatically. Do not add a modifier, resequence a diagnosis or change a code on the engine's behalf.
-6. Before live keys, read `GET https://api.trustycap.com/v1/health/phi/status`. Live keys refuse healthcare inputs until the organization attests that its inputs are de-identified, or completes the PHI gates; raw interchanges on a live key need the live PHI mode, which activates only when the agreements are on file. Show the human the missing gates; do not work around them.
+6. Before live keys, read the PHI status endpoint (`GET /v1/health/phi/status` on the API, with the builder's key). Live keys refuse healthcare inputs until the organization attests that its inputs are de-identified, or completes the PHI gates; raw interchanges on a live key need the live PHI mode, which activates only when the agreements are on file. Show the human the missing gates; do not work around them.
 
 ## Prove it worked
 
