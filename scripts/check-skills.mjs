@@ -77,6 +77,18 @@ try {
 
 const urls = new Set();
 
+/*
+ * The command every install path ends in. On 2026-09-09 seven skills told an agent to run
+ * `npx trustycap`, a package that has never existed on npm, and every agent that followed them
+ * failed on its first command while every link check here stayed green. The CLI is @trustycap/cli.
+ * So a skill may name exactly two things after `npx`: the skills CLI that installs it, and the
+ * canonical TrustyCap CLI. Live, that CLI has to resolve on the registry and carry the `trustycap`
+ * binary the skills invoke, so a rename or an unpublish fails here rather than in a builder's shell.
+ */
+const CANONICAL_CLI = "@trustycap/cli";
+const CLI_BINARY = "trustycap";
+const npxPackages = new Set();
+
 for (const file of files) {
   const rel = file.slice(ROOT.length);
   const text = readFileSync(file, "utf8");
@@ -127,8 +139,17 @@ for (const file of files) {
   if (name === "production-readiness-audit" && /install_contracts\[/.test(body))
     note(`${rel}: the audit skill must not carry an install path`);
 
+  for (const m of body.matchAll(/\bnpx\s+(?:-y\s+)?(@?[a-z0-9][a-z0-9._-]*(?:\/[a-z0-9._-]+)?)/g)) {
+    const pkg = m[1];
+    if (pkg === "skills") continue;
+    if (pkg !== CANONICAL_CLI)
+      note(`${rel}: runs \`npx ${pkg}\`; the only CLI a skill may name is ${CANONICAL_CLI}`);
+    npxPackages.add(pkg);
+  }
+
   for (const m of body.matchAll(/https:\/\/[a-z0-9.]*trustycap\.com[^\s`)"']*/g)) urls.add(m[0]);
 }
+if (!npxPackages.has(CANONICAL_CLI)) note(`no skill names ${CANONICAL_CLI}; the install path has gone missing`);
 
 // --- live checks --------------------------------------------------------------------
 if (live) {
@@ -144,6 +165,18 @@ if (live) {
   };
 
   for (const url of urls) await check(url);
+
+  // The package a skill tells an agent to run has to exist, today, with the binary the skill invokes.
+  for (const pkg of npxPackages) {
+    const res = await check(`https://registry.npmjs.org/${encodeURIComponent(pkg)}`);
+    if (!res?.ok) continue;
+    const doc = await res.json();
+    const latest = doc["dist-tags"]?.latest;
+    const bin = latest ? doc.versions?.[latest]?.bin ?? {} : {};
+    if (!latest) note(`${pkg} has no latest version on npm`);
+    else if (!(CLI_BINARY in bin))
+      note(`${pkg}@${latest} does not carry the \`${CLI_BINARY}\` binary the skills invoke (bin: ${Object.keys(bin).join(", ") || "none"})`);
+  }
 
   // The surface every skill routes to has to carry the fields those skills tell an agent to read.
   const res = await check("https://api.trustycap.com/v1/agent-decision");
@@ -165,6 +198,6 @@ if (problems.length > 0) {
 }
 console.log(
   `skills: ${files.length} skills, frontmatter valid, none states a price, every one says what it ` +
-    `is not for and routes to the decision surface` +
-    (live ? `; ${urls.size} linked URLs resolve` : ""),
+    `is not for and routes to the decision surface; every install command runs ${CANONICAL_CLI}` +
+    (live ? `; ${urls.size} linked URLs resolve and ${CANONICAL_CLI} resolves on npm with the ${CLI_BINARY} binary` : ""),
 );

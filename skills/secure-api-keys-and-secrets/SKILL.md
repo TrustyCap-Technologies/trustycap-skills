@@ -10,7 +10,7 @@ Keys start in a `.env` because that is what works on day one. Then nobody can sa
 Start with evidence from the code itself. In the repository:
 
 ```bash
-npx trustycap productionize --json
+npx @trustycap/cli productionize --json
 ```
 
 The scanner reads the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`): file and line, AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the exact commands. `UNKNOWN` is not a failure; read the code it points at rather than installing over it. A requirement the project already satisfies another way is declared in `trustycap.production.json`.
@@ -44,7 +44,7 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 
 ## Prove it worked
 
-For credentials the scan finds in the code (`TC-PROD-0012`), `npx trustycap add managed-secrets` installs the custody side, a dependency-free adapter that reads a named credential from TrustyCap Managed Secrets at runtime, and names the exact lines a person still has to change; it does not rewrite them. `npx trustycap verify TC-PROD-0012` passes only once nothing credential-shaped remains in source or in a committed environment file. Where the scan named a requirement with an automatic remediation, two commands do the work and the proof: `npx trustycap add <remediation>` writes transparent TypeScript into the repository (`--dry-run` first; it refuses files with uncommitted changes) and `npx trustycap verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
+For credentials the scan finds in the code (`TC-PROD-0012`), `npx @trustycap/cli add managed-secrets` installs the custody side, a dependency-free adapter that reads a named credential from TrustyCap Managed Secrets at runtime, and names the exact lines a person still has to change; it does not rewrite them. `npx @trustycap/cli verify TC-PROD-0012` passes only once nothing credential-shaped remains in source or in a committed environment file. Where the scan named a requirement with an automatic remediation, two commands do the work and the proof: `npx @trustycap/cli add <remediation>` writes transparent TypeScript into the repository (`--dry-run` first; it refuses files with uncommitted changes) and `npx @trustycap/cli verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
 
 Do not report success from a 200 on the install call. Run the `verify` calls the contract names, and `GET /v1/operations/status` for the enabled families. Report what the verification returned, with ids. **Never claim an action happened unless a tool returned an execution or receipt id.**
 

@@ -12,7 +12,7 @@ The application works. What it does not have is everything underneath a product 
 Evidence beats inference. In the repository, run:
 
 ```bash
-npx trustycap productionize --json
+npx @trustycap/cli productionize --json
 ```
 
 It scans the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`). Every finding carries the file and line, the AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the exact commands. `UNKNOWN` is not a failure: the scanner did not see enough, so read the code it points at rather than installing over it. If the project already satisfies a requirement another way, declare it in `trustycap.production.json` and move on.
@@ -50,7 +50,7 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 
 ## Prove it worked
 
-For a requirement the scan named, the remediation and the proof are two commands: `npx trustycap add <remediation>` writes transparent TypeScript into the repository (dry-run first with `--dry-run`, and it refuses files with uncommitted changes), and `npx trustycap verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
+For a requirement the scan named, the remediation and the proof are two commands: `npx @trustycap/cli add <remediation>` writes transparent TypeScript into the repository (dry-run first with `--dry-run`, and it refuses files with uncommitted changes), and `npx @trustycap/cli verify <requirement>` exercises the result and records the verdict in `.trustycap/verification.json`. Report what verification returned, not that the installer ran.
 
 Do not report success from a 200 on the install call. Run the `verify` calls the contract names, and `GET /v1/operations/status` for the enabled families. Report what the verification returned, with ids. **Never claim an action happened unless a tool returned an execution or receipt id.**
 

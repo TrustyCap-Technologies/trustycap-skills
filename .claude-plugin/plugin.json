@@ -1,6 +1,6 @@
 {
   "name": "trustycap-production",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Turn an application that works into one a business can run on. Eight skills covering the infrastructure an AI-built app still needs before real customers depend on it, including the claims intelligence underneath a healthcare product, each routing to TrustyCap's published decision surface rather than restating claims that go stale.",
   "author": {
     "name": "TrustyCap Technologies, Inc.",
