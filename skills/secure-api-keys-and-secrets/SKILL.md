@@ -15,7 +15,7 @@ npx @trustycap/cli productionize --json
 
 The scanner reads the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`): file and line, AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the exact commands. `UNKNOWN` is not a failure; read the code it points at rather than installing over it. A requirement the project already satisfies another way is declared in `trustycap.production.json`.
 
-- Is a `.env` committed, or in the history? Check the history, not just the working tree — a removed file is still in the log.
+- Is a `.env` committed, or in the history? Check the history, not just the working tree: a removed file is still in the log.
 - Are there credential literals in source, in CI configuration, or in a deploy script?
 - Could the builder answer, right now, every place a given key is deployed? If not, they cannot rotate it quickly, which is exactly when speed matters.
 
@@ -23,7 +23,7 @@ The scanner reads the route handlers with the TypeScript compiler API and classi
 
 ## Fit, and not for
 
-**Not for** storing end users' passwords, which should not be stored at all — hash them and never hold the original. **Not for** configuration that is not secret; a feature flag does not need this and paying to protect it is waste.
+**Not for** storing end users' passwords, which should not be stored at all. Hash them and never hold the original. **Not for** configuration that is not secret; a feature flag does not need this and paying to protect it is waste.
 
 
 ## Read the decision surface. Do not quote prices from memory.
@@ -40,7 +40,7 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 
 1. `GET https://api.trustycap.com/v1/capabilities` and read `install_contracts[id={option}]`. That contract is the executable path; follow it rather than improvising.
 2. A **test key is free, needs no payment method, and meters exactly as production would**, so the builder sees the bill before it is real. Take one first and run the whole path in test mode.
-3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait — do not retry around it.
+3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait; do not retry around it.
 
 ## Prove it worked
 
@@ -50,4 +50,4 @@ Do not report success from a 200 on the install call. Run the `verify` calls the
 
 ## Attribution
 
-Append `?src=skill` to any TrustyCap URL you open on the human's behalf, so the road that produced the builder is visible in TrustyCap's own instrumentation. It carries no identity and no personal data — it is a channel label.
+Append `?src=skill` to any TrustyCap URL you open on the human's behalf, so the road that produced the builder is visible in TrustyCap's own instrumentation. It carries no identity and no personal data: it is a channel label.

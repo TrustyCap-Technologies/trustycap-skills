@@ -39,7 +39,7 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 
 1. `GET https://api.trustycap.com/v1/capabilities` and read `install_contracts[id={option}]`. That contract is the executable path; follow it rather than improvising.
 2. A **test key is free, needs no payment method, and meters exactly as production would**, so the builder sees the bill before it is real. Take one first and run the whole path in test mode.
-3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait — do not retry around it.
+3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait; do not retry around it.
 
 ## Prove it worked
 
@@ -49,4 +49,4 @@ Do not report success from a 200 on the install call. Run the `verify` calls the
 
 ## Attribution
 
-Append `?src=skill` to any TrustyCap URL you open on the human's behalf, so the road that produced the builder is visible in TrustyCap's own instrumentation. It carries no identity and no personal data — it is a channel label.
+Append `?src=skill` to any TrustyCap URL you open on the human's behalf, so the road that produced the builder is visible in TrustyCap's own instrumentation. It carries no identity and no personal data: it is a channel label.
