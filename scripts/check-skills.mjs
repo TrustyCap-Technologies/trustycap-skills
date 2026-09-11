@@ -147,24 +147,128 @@ for (const file of files) {
     npxPackages.add(pkg);
   }
 
-  for (const m of body.matchAll(/https:\/\/[a-z0-9.]*trustycap\.com[^\s`)"']*/g)) urls.add(m[0]);
+  // The method matters. A skill that tells an agent to POST to a route and a checker that GETs it
+  // are testing different things, and the checker will be wrong first: /v1/workspaces is POST only
+  // and answers 404 to a GET, which read as a dead link for a route that was working perfectly.
+  for (const m of body.matchAll(
+    /(?:\b(POST|GET|PUT|PATCH|DELETE)\s+|-X\s+(POST|GET|PUT|PATCH|DELETE)\b[^\n]{0,80}?)?(https:\/\/[a-z0-9.]*trustycap\.com[^\s`)"']*)/g,
+  )) {
+    const method = (m[1] ?? m[2] ?? "GET").toUpperCase();
+    urls.add(`${method} ${m[3]}`);
+  }
 }
 if (!npxPackages.has(CANONICAL_CLI)) note(`no skill names ${CANONICAL_CLI}; the install path has gone missing`);
 
 // --- live checks --------------------------------------------------------------------
+
+/**
+ * The bodies a POST route needs, and what its answer has to contain.
+ *
+ * A route a skill tells an agent to POST to is only proven by posting to it. Every entry here is a
+ * real call against production with a real assertion on the shape that matters, because a 200 with
+ * the wrong body is the failure these skills would actually suffer from.
+ *
+ * The user agent is the whole safety story for the one route that writes. TrustyCap classifies any
+ * `TrustyCap-` prefixed caller as itself, and a workspace provisioned by one is labelled
+ * internal_proof when it is created, which puts it outside every external-builder number by
+ * construction rather than by anybody remembering. It is test mode only, it can never hold a live
+ * key, and its claim link expires unclaimed.
+ */
+const PROBE = {
+  "/v1/workspaces": {
+    body: { name: "Skills live check", platform: "claude_code", origin: "skill" },
+    expect: 201,
+    assert: (d) => {
+      const wrong = [];
+      if (!/^org_/.test(String(d.workspace_id ?? ""))) wrong.push("workspace_id");
+      if (!/^app_/.test(String(d.application_id ?? ""))) wrong.push("application_id");
+      if (!/^sk_test_/.test(String(d.api_key ?? ""))) wrong.push("a test api_key");
+      if (!String(d.claim_url ?? "").includes("/claim/")) wrong.push("claim_url");
+      if (d.claimed !== false) wrong.push("claimed: false");
+      return wrong;
+    },
+    // The per-address ceiling refusing the call is the other property this route has to hold, and
+    // it proves the same thing a 201 does: the route is mounted and it is not answering 404.
+    tolerate: [429],
+  },
+  "/v1/autopilot/route": {
+    body: { platform: "lovable", intent: "somewhere to keep customer bookings" },
+    expect: 200,
+    assert: (d) => {
+      const wrong = [];
+      if (!Array.isArray(d.already_handled)) wrong.push("already_handled");
+      if (!Array.isArray(d.still_needed)) wrong.push("still_needed");
+      if (!Array.isArray(d.refused)) wrong.push("refused");
+      // The one thing this surface exists to do. A Lovable build has a database already.
+      if (!(d.refused ?? []).some((r) => r.target === "data")) wrong.push("a refusal for the data family");
+      return wrong;
+    },
+    tolerate: [],
+  },
+  "/v1/guide/compose": {
+    body: { intent: "bookings, files and reminders", platform: "v0" },
+    expect: 200,
+    assert: (d) => {
+      const wrong = [];
+      if (!Array.isArray(d.capabilities) || d.capabilities.length === 0) wrong.push("capabilities");
+      if (!Array.isArray(d.excluded)) wrong.push("excluded");
+      if (!Array.isArray(d.install?.steps) || d.install.steps.length === 0) wrong.push("install.steps");
+      return wrong;
+    },
+    tolerate: [],
+  },
+};
+
 if (live) {
-  const check = async (url) => {
+  const UA = "TrustyCap-Skills-Check/1.0";
+
+  const check = async (url, method = "GET") => {
+    const path = (() => {
+      try {
+        return new URL(url).pathname;
+      } catch {
+        return "";
+      }
+    })();
+    const probe = method === "POST" ? PROBE[path] : null;
+    if (method !== "GET" && !probe) {
+      // Never silently skipped. A skill that starts naming a new POST route has to bring a probe
+      // with it, or this says so rather than leaving the route untested and looking green.
+      note(`${method} ${url} has no probe; add one to PROBE in this file rather than leaving it unchecked`);
+      return null;
+    }
     try {
-      const res = await fetch(url, { headers: { "user-agent": "TrustyCap-Sentinel/2.0" }, redirect: "follow" });
-      if (!res.ok) note(`${url} answered ${res.status}`);
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "user-agent": UA,
+          ...(probe ? { "content-type": "application/json" } : {}),
+        },
+        ...(probe ? { body: JSON.stringify(probe.body) } : {}),
+        redirect: "follow",
+      });
+      if (!probe) {
+        if (!res.ok) note(`GET ${url} answered ${res.status}`);
+        return res;
+      }
+      if (probe.tolerate.includes(res.status)) return res;
+      if (res.status !== probe.expect) {
+        note(`${method} ${url} answered ${res.status}, expected ${probe.expect}`);
+        return res;
+      }
+      const wrong = probe.assert(await res.json().catch(() => ({})));
+      if (wrong.length) note(`${method} ${url} answered ${res.status} without ${wrong.join(", ")}`);
       return res;
     } catch (err) {
-      note(`${url} was unreachable: ${String(err).slice(0, 60)}`);
+      note(`${method} ${url} was unreachable: ${String(err).slice(0, 60)}`);
       return null;
     }
   };
 
-  for (const url of urls) await check(url);
+  for (const entry of urls) {
+    const [method, ...rest] = entry.split(" ");
+    await check(rest.join(" "), method);
+  }
 
   // The package a skill tells an agent to run has to exist, today, with the binary the skill invokes.
   for (const pkg of npxPackages) {
@@ -199,5 +303,8 @@ if (problems.length > 0) {
 console.log(
   `skills: ${files.length} skills, frontmatter valid, none states a price, every one says what it ` +
     `is not for and routes to the decision surface; every install command runs ${CANONICAL_CLI}` +
-    (live ? `; ${urls.size} linked URLs resolve and ${CANONICAL_CLI} resolves on npm with the ${CLI_BINARY} binary` : ""),
+    (live
+      ? `; ${urls.size} linked surfaces answer the method the skills use, ${Object.keys(PROBE).length} of them ` +
+        `POST contracts asserted against production, and ${CANONICAL_CLI} resolves on npm with the ${CLI_BINARY} binary`
+      : ""),
 );
