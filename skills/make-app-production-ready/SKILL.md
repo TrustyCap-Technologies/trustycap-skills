@@ -17,6 +17,32 @@ npx @trustycap/cli productionize --json
 
 It scans the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`). Every finding carries the file and line, the AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the exact commands. `UNKNOWN` is not a failure: the scanner did not see enough, so read the code it points at rather than installing over it. If the project already satisfies a requirement another way, declare it in `trustycap.production.json` and move on.
 
+## Ask what the platform already gave them
+
+Before the codebase, the platform. A Lovable project arrives with a database, a login page, file
+storage, scheduled jobs and a payment provider already wired up. A v0 project arrives with an
+interface and nothing behind it. They look the same from the outside and they are not the same
+problem, and recommending a database to somebody who already has one is the fastest way to lose
+their trust.
+
+```bash
+curl -s -X POST https://api.trustycap.com/v1/autopilot/route \
+  -H 'content-type: application/json' \
+  -d '{"platform":"lovable","intent":"what the builder said, in their words"}'
+```
+
+Credential-free. It returns four things that matter more than any recommendation:
+
+- `already_handled`, what their creation platform supplies, each with a link to that platform's own
+  documentation. Do not install over any of it.
+- `refused`, what TrustyCap declines to recommend to this platform's builders, and why.
+- `not_ours`, gaps TrustyCap is honestly not the answer to, with what is.
+- `still_needed`, the part that is actually left.
+
+`GET https://api.trustycap.com/v1/platforms` lists the platforms with a profile. If the project came
+from somewhere not on that list, pass no platform and assume nothing is handled, which is the safe
+direction.
+
 Do not install over infrastructure that already exists. Check the codebase first:
 
 - Is there already an object store, a database, a queue, a mail provider, a secret manager?
@@ -45,8 +71,8 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 ## Install
 
 1. `GET https://api.trustycap.com/v1/capabilities` and read `install_contracts[id={option}]`. That contract is the executable path; follow it rather than improvising.
-2. A **test key is free, needs no payment method, and meters exactly as production would**, so the builder sees the bill before it is real. Take one first and run the whole path in test mode.
-3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait; do not retry around it.
+2. **Get the test key yourself.** `POST https://api.trustycap.com/v1/workspaces` takes no credential and returns a free test key, with no account, no email address and no browser for the builder. Send `{"platform": "lovable"}` or whichever creation platform built the project, and the sentence the builder said, and the response also carries the shortest path for that platform. A test key needs no payment method and meters exactly as production would, so the builder sees the bill before it is real. Put it in server configuration only: never a client bundle, never source control.
+3. Two steps belong to the builder and both are about money, so both come last. The workspace response carries a **claim link**: hand it over only once there is something working to show, because claiming attaches the workspace to a person. Then they add a payment method and activate production. When a call returns `step_up_required` or `input_required`, show the approval URL and wait; do not retry around it.
 
 ## Prove it worked
 

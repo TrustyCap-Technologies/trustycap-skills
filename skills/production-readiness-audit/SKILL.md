@@ -15,6 +15,23 @@ npx @trustycap/cli productionize --dry-run --json
 
 The scanner reads the route handlers with the TypeScript compiler API and classifies each against the published production standard (`GET https://api.trustycap.com/v1/production/requirements`): file and line, AST evidence, a classification (`CONFIRMED_FAIL`, `PROBABLE_GAP`, `UNKNOWN`, `PASS`), the provider-neutral requirement, the implementations that satisfy it, and the commands that would remediate and verify. `--dry-run` writes nothing. This skill audits and installs nothing; hand the findings to the human with the commands each one names.
 
+Then ask what the platform gave them before you ask what the code has. A Lovable project arrives
+with a database, a login page, file storage, scheduled jobs and a payment provider already wired
+up; a v0 project arrives with an interface and nothing behind it. An audit that misses this
+recommends infrastructure the builder already pays for.
+
+```bash
+curl -s -X POST https://api.trustycap.com/v1/autopilot/route \
+  -H 'content-type: application/json' \
+  -d '{"platform":"replit","intent":"what the builder said, in their words"}'
+```
+
+Credential-free. `already_handled` carries each claim with a link to that platform's own
+documentation, `refused` says what TrustyCap declines to recommend to this platform's builders,
+`not_ours` names the gaps TrustyCap is not the answer to, and `still_needed` is what is left.
+`GET https://api.trustycap.com/v1/platforms` lists the platforms with a profile; if the project came
+from somewhere else, pass no platform and assume nothing is handled.
+
 Work out what the application already does for itself. For each area, look for the evidence before deciding it is missing:
 
 | Area | Present if you find | Missing if |

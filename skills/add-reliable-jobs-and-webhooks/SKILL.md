@@ -38,8 +38,8 @@ Find the option under `intent_map` whose `intent` or `also_said_as` matches what
 ## Install
 
 1. `GET https://api.trustycap.com/v1/capabilities` and read `install_contracts[id={option}]`. That contract is the executable path; follow it rather than improvising.
-2. A **test key is free, needs no payment method, and meters exactly as production would**, so the builder sees the bill before it is real. Take one first and run the whole path in test mode.
-3. Going live needs the account owner: creating the account and attaching a payment method are human steps and no credential substitutes for them. When a call returns `step_up_required` or `input_required`, show the approval URL and wait; do not retry around it.
+2. **Get the test key yourself.** `POST https://api.trustycap.com/v1/workspaces` takes no credential and returns a free test key, with no account, no email address and no browser for the builder. Send `{"platform": "lovable"}` or whichever creation platform built the project, and the sentence the builder said, and the response also carries the shortest path for that platform. A test key needs no payment method and meters exactly as production would, so the builder sees the bill before it is real. Put it in server configuration only: never a client bundle, never source control.
+3. Two steps belong to the builder and both are about money, so both come last. The workspace response carries a **claim link**: hand it over only once there is something working to show, because claiming attaches the workspace to a person. Then they add a payment method and activate production. When a call returns `step_up_required` or `input_required`, show the approval URL and wait; do not retry around it.
 
 ## Prove it worked
 
